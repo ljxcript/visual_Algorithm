@@ -1,0 +1,147 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+	<title></title>
+	<style type="text/css">
+			body {
+				background-color: black;
+				margin: 0px;
+				overflow: hidden;
+			}
+			h1 {
+				color: white;
+				font-family: "Open Sans",Tahoma,Arial;
+			}
+			.title-container{
+				position: absolute;
+				top: 0px;
+				left: 10px;
+			}
+		</style>
+	</head>
+</head>
+<body>
+	<div class="title-container">
+		<h1>Bubble Sorting Visualization</h1>
+	</div>
+	<script type="text/javascript">
+
+
+	var canvas = document.createElement('canvas');
+	context = canvas.getContext('2d');
+	var canvasWidth = window.innerWidth;
+	var canvasHeight = window.innerHeight;
+
+
+
+
+	var animationInterval;
+              var circles = [];
+              var Sortedcircles = [];
+
+              var steps = [];
+              var stepC = 0;
+
+	for (var i = 0; i < 80;i++){
+
+		var xp = circles.length? circles.length*20+50:50;
+    		var circle = new Circle(Number.parseInt(Math.random()*100), xp);
+    		var circle2 = new Circle(circle.r, circle.x);
+    		circles.push(circle);
+    		Sortedcircles.push(circle2);
+	}
+
+	for (var i = 0; i < circles.length;i++){
+	        for (var j = 0;j < circles.length-i-1;j++){
+		if (circles[j].r >circles[j+1].r){
+         	
+		var step = { 
+			ex1    :  j,
+			ex2    :  j+1,
+			ex1To : circles[j+1].x,
+			ex2To : circles[j].x
+		};
+		steps.push(step);
+
+		[circles[j].x,circles[j+1].x] = [circles[j+1].x,circles[j].x];
+		[circles[j],circles[j+1]] = [circles[j+1],circles[j]];	
+
+	            }
+	        }
+	    }
+
+	init();
+	
+
+	function exchangeAnimation(){
+
+		Sortedcircles[steps[stepC].ex1].x +=2;
+
+		Sortedcircles[steps[stepC].ex2].x -=2;
+		
+		if (Sortedcircles[steps[stepC].ex1].x == steps[stepC].ex1To &&Sortedcircles[steps[stepC].ex2].x == steps[stepC].ex2To  ){
+			Sortedcircles[steps[stepC].ex1].r *=-1;
+			Sortedcircles[steps[stepC].ex2].r *= -1;
+			[Sortedcircles[steps[stepC].ex1],Sortedcircles[steps[stepC].ex2]] = [Sortedcircles[steps[stepC].ex2],Sortedcircles[steps[stepC].ex1]];  //swap if they have been moved to correct position
+			stepC++; 
+
+			Sortedcircles[steps[stepC].ex1].r *=-1;
+			Sortedcircles[steps[stepC].ex2].r *= -1;
+		}
+
+		if (!steps[stepC]) window.clearInterval(animationInterval);			
+	}
+
+
+
+
+
+	function init(){
+		document.body.appendChild(canvas);
+		canvas.width = canvasWidth;
+		canvas.height = canvasHeight;
+
+		 i = setInterval(loop, 1000/30);
+ 		Sortedcircles[steps[stepC].ex1].r *=-1;
+		Sortedcircles[steps[stepC].ex2].r *= -1;
+		animationInterval =  setInterval(exchangeAnimation,10);
+		// window.onclick = function(e){
+
+		// 	var left = e.clientX;
+		// 	var top = e.clientY;
+		// 	burst(left,top);
+		// 	// console.log(left+"  "+top);
+		// }
+	}
+
+
+
+	function Circle(radius, xPos, yPos=window.innerHeight*0.5){
+	    	this.x = xPos;
+	    	this.y = yPos;
+	    	this.r = radius;
+	    	this.nextX = xPos;
+	    	this.render = function(c){
+
+			c.fillStyle ="#DDDDDD";	    
+			c.fillRect(this.x, this.y+100, 10, -this.r*4);
+
+	   	 }    
+	}
+
+	function loop(){
+		context.clearRect(0,0,canvas.width, canvas.height);
+		draw();
+	}
+
+	function draw(){
+		for (var elem of Sortedcircles){
+			elem.render(context);
+		}
+	}
+
+	</script>
+
+
+</body>
+</html>

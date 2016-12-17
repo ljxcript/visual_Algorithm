@@ -1,0 +1,452 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+	<title></title>
+	<style type="text/css">
+			body {
+				background-color: black;
+				margin: 0px;
+				overflow: hidden;
+			}
+			h1 {
+				font-size: 80px;
+				color: white;
+				font-family: "Open Sans",Tahoma,Arial;
+			}
+			.title-container{
+				position: absolute;
+				top: 0px;
+				left: 10px;
+			}
+		</style>
+	</head>
+</head>
+<body>
+	<div class="title-container">
+		<h1>Merge Sort Visualization</h1>
+	</div>
+	<script type="text/javascript">
+
+	var myColor = ["rgba(211,12,112,1)","rgba(255,255,255,0.6)","rgba(252,227,202,1)","rgba(18,106,194,1)"];
+	var colorN = 0;
+	var yVelocity = 50;
+	var Velocity = 25;
+	var forbidden = false;
+
+	var canvas = document.createElement('canvas');
+	context = canvas.getContext('2d');
+	var canvasWidth = window.innerWidth;
+	var canvasHeight = window.innerHeight;
+    var steps = [];
+
+ 
+	var animationInterval;
+	
+
+	var circles = [];
+	var Scircles = [];
+	var divisionLine = [];
+
+	var N = 100;
+	var jianju = 25;
+	for (var i = 0; i < N; i++){
+
+		var xp = circles.length*jianju+10;
+		var circle = new Circle(Number.parseInt(Math.random()*100), xp);
+		var circle2 = new Circle(circle.r, circle.x);
+		circles.push(circle);
+		Scircles.push(circle2);
+	}
+
+
+	function merge(left, right, depth){
+		var result = [];
+		var step = {
+			// leftEnd: ,
+			// rightEnd: ,
+			moves:1
+		};
+		while(left.length > 0 && right.length > 0){
+			if(left[0].r<right[0].r){
+				var temp = left.shift();
+				// var mvInfo = {
+				// 	index: 
+				// };
+				// step.moves.push(mvInfo);
+	            result.push(temp);
+	        }else{
+	        	var temp = right.shift();
+				// var mvInfo = {
+
+				// };
+				// step.moves.push(mvInfo);	        	
+	            result.push(temp);
+	        }
+		}
+ 	   //  if (!steps[depth]) 
+	    // steps[depth] = [];
+	    // steps[depth].push(step);
+		return result.concat(left).concat(right);
+	}
+
+	function mergeSort(items,depth){
+		if (items.length == 1) {
+			return items;
+		}
+		var middle = Math.floor(items.length/2),
+		    left = items.slice(0, middle),
+		    right = items.slice(middle);
+		    depth++;
+		    // console.log(depth);
+		    return merge(mergeSort(left, depth), mergeSort(right, depth));
+	}
+
+    circles = mergeSort(circles,0);
+	for (var i = 0; i < N; i++){
+
+		var xp = i*20+10;
+		circles[i].x = xp;
+	}
+
+
+
+	for (var ele of Scircles){
+		console.log("x: "+ele.x+ " "+"r: "+ele.r);
+	}
+
+
+
+	init();
+
+	var stateMachine ={
+		stepC:0, 
+		zu: [],   // we use stepC %2 to decide upView or the downView
+		truezu:[],
+		currentState: 0,
+		left:[],
+		right:[]
+ 	};
+
+
+ 	stateMachine.tangshu = Math.floor(Math.log(N) / Math.log(2));
+ 	stateMachine.zuyuanshu = Math.pow(2, stateMachine.stepC+1);
+ 	stateMachine.zushu = N/stateMachine.zuyuanshu;
+
+	for (var i = 0; i < stateMachine.zushu;i++){
+		stateMachine.zu[i] = stateMachine.zuyuanshu;
+		stateMachine.truezu[i] = 0;
+		stateMachine.left[i] = [];
+		stateMachine.left[i] = Scircles.slice(i*stateMachine.zuyuanshu,i*stateMachine.zuyuanshu+stateMachine.zuyuanshu/2);
+	
+		stateMachine.right[i] = [];
+		stateMachine.right[i] = Scircles.slice(i*stateMachine.zuyuanshu+stateMachine.zuyuanshu/2,i*stateMachine.zuyuanshu+stateMachine.zuyuanshu);		
+	}// the initialization of the stateMachin
+	if (stateMachine.zuyuanshu* stateMachine.zushu > N){
+		stateMachine.zu[stateMachine.zu.length-1] =stateMachine.zuyuanshu-stateMachine.zuyuanshu*stateMachine.zushu+N
+	}
+	function next(){
+		for (var ele of Scircles){
+
+			if ( ele.y != window.innerHeight*0.5+100)
+				return false;
+		}
+		return true;
+	}
+
+	function sortTool(a, b){
+		return a.x - b.x;
+	}
+
+	function correct(array,mes="n"){
+
+		forbidden = true;
+		for (var i = 0; i < N; i++){
+			array.sort(sortTool);
+		}
+		if (mes =="message"){
+			for (var ele of array){
+				console.log(ele.r);
+			}
+		}	
+		console.log("ddddddddddddddddddddd");
+		for (var ele of array){
+				console.log(ele.r);
+		}	
+		forbidden = false;
+	}
+
+	function Animation(){
+
+
+			if (stateMachine.currentState == 0){      //state 0, elements falling down and 
+				var tf = true;
+				for (var j = 0; j < N; j++){
+					if (Scircles[j].y < window.innerHeight*0.5+540){
+						Scircles[j].y += 5;
+						tf = false;
+					}
+				}
+				if(tf) {
+
+        //shade them with different colors and add divisionLines
+					// for (var i = 0; i < N; i++){
+					// 	var xp = i*jianju+10;
+					// 	Scircles[i].x = xp;
+					// }	
+					// correct();				
+
+
+					stateMachine.currentState = 1;
+					distinguishing();
+				}              
+			}
+
+
+			if (stateMachine.currentState == 1 && !forbidden){
+				var isMergeDone = true;
+				//begin to merge (the merge animation)
+				for (var i = 0; i < stateMachine.zushu; i++){
+				 	// console.log(stateMachine.left[i]);
+				 	// console.log(stateMachine.right[i]);
+				 	// console.log(stateMachine.zu);
+				 	// console.log(stateMachine.truezu);
+				 	if (stateMachine.left[i].length==0 || stateMachine.right[i].length==0){
+				 		if (stateMachine.left[i].length==0 && stateMachine.right[i].length==0){
+
+				 		}else{
+					 		if(stateMachine.left[i].length==0){
+					        	var temp = (stateMachine.right[i])[0];    	
+								if (temp.y > window.innerHeight*0.5+100){
+									temp.y -= yVelocity;
+
+								}
+								else {
+									if(temp.x >stateMachine.zuyuanshu*i*jianju+stateMachine.truezu[i]*jianju+10){
+										temp.x -= Velocity;
+									}else{ 
+										if(temp.x < stateMachine.zuyuanshu*i*jianju+stateMachine.truezu[i]*jianju+10){
+											temp.x += Velocity;
+										}else{ 
+											stateMachine.right[i].shift();
+											stateMachine.truezu[i]++;
+										}
+									}
+								}	
+					 		}else {
+
+								var temp = (stateMachine.left[i])[0];
+								if (temp.y > window.innerHeight*0.5+100 ){
+									temp.y -= yVelocity;
+
+								}
+								else {
+									if (temp.x > stateMachine.zuyuanshu*i*jianju+stateMachine.truezu[i]*jianju+10){
+										temp.x -= Velocity;										
+									}else {
+										if (temp.x < stateMachine.zuyuanshu*i*jianju+stateMachine.truezu[i]*jianju+10){
+											temp.x += Velocity;										
+										}else {
+
+											stateMachine.left[i].shift();
+											stateMachine.truezu[i]++;
+										}
+									}
+								}											 			
+					 		}
+				 		}
+				 	}else {
+
+						if((stateMachine.left[i])[0].r<(stateMachine.right[i])[0].r){
+							var temp = (stateMachine.left[i])[0];
+							if (temp.y > window.innerHeight*0.5+100){
+								temp.y -= yVelocity;
+
+							}
+							else {
+								if (temp.x > stateMachine.zuyuanshu*i*jianju+stateMachine.truezu[i]*jianju+10){
+									temp.x -= Velocity;									
+								}else {
+									if (temp.x < stateMachine.zuyuanshu*i*jianju+stateMachine.truezu[i]*jianju+10){
+										temp.x += Velocity;									
+									}else {
+										stateMachine.left[i].shift();
+										stateMachine.truezu[i]++;
+									}
+								}
+							}						
+				        }else{
+				        	var temp = (stateMachine.right[i])[0];    	
+							if (temp.y > window.innerHeight*0.5+100){
+								temp.y -= yVelocity;
+
+							}
+							else {
+								if (temp.x > stateMachine.zuyuanshu*i*jianju+stateMachine.truezu[i]*jianju+10){
+									temp.x -= Velocity;
+								}else {
+									if (temp.x < stateMachine.zuyuanshu*i*jianju+stateMachine.truezu[i]*jianju+10){
+										temp.x += Velocity;
+									}else {
+										stateMachine.right[i].shift();
+										stateMachine.truezu[i]++;
+									}
+								}
+							}			        	
+				        }
+								
+			    	}
+					for (var k = 0; k < stateMachine.zushu; k++){
+						if (stateMachine.truezu[k]!= stateMachine.zu[k])
+							isMergeDone = false;
+					}
+					if (isMergeDone){
+						stateMachine.currentState =2;
+					}
+				}//enter the merge procedure
+
+			}
+			if (stateMachine.currentState == 2){
+
+
+				stateMachine.stepC++;
+				if (stateMachine.stepC > stateMachine.tangshu) {
+					alert(stateMachine.stepC);
+					window.clearInterval(animationInterval);	 
+				}else {
+					stateMachine.left = [];
+					stateMachine.right = [];
+					stateMachine.zu = [];
+					stateMachine.truezu = [];
+					stateMachine.currentState = 0;	
+				 	stateMachine.zuyuanshu = Math.pow(2, stateMachine.stepC+1);
+				 	stateMachine.zushu = Math.ceil(N/stateMachine.zuyuanshu);
+	
+					for (var i = 0; i < stateMachine.zushu;i++){
+						stateMachine.zu[i] = stateMachine.zuyuanshu;
+
+						stateMachine.truezu[i] = 0;
+						stateMachine.left[i] = [];
+						stateMachine.left[i] = Scircles.slice(i*stateMachine.zuyuanshu,i*stateMachine.zuyuanshu+stateMachine.zuyuanshu/2);
+
+						stateMachine.right[i] = [];
+						stateMachine.right[i] = Scircles.slice(i*stateMachine.zuyuanshu+stateMachine.zuyuanshu/2,i*stateMachine.zuyuanshu+stateMachine.zuyuanshu);				
+			
+					}// the initialization of the stateMachine
+					for (var t = 0; t < stateMachine.left.length;t++){
+						if (stateMachine.left.length == 1)
+						correct(stateMachine.left[t],"message");
+					    else
+						correct(stateMachine.left[t]);
+					}
+					for (var t = 0; t < stateMachine.right.length;t++){
+						correct(stateMachine.right[t]);					
+					}
+	
+					if (stateMachine.zuyuanshu*stateMachine.zushu > N){
+						stateMachine.zu[stateMachine.zu.length-1] =stateMachine.zuyuanshu-stateMachine.zuyuanshu*stateMachine.zushu+N
+					}
+				}			
+			}
+
+
+
+		
+	}
+
+
+
+	function distinguishing(){
+		for (var i = 0; i < stateMachine.zushu; i++){
+			// var r = Math.ceil(Math.random()*255);
+			// var g = Math.ceil(Math.random()*255);
+			// var b = Math.ceil(Math.random()*255);
+			colorN = (colorN+1)%4;
+			for (var j = 0; j < stateMachine.zuyuanshu; j++){
+				Scircles[i*stateMachine.zuyuanshu+j].color = myColor[colorN];
+				if (j == stateMachine.zuyuanshu/2-1){
+					var line = new Line(Scircles[i*stateMachine.zuyuanshu+j].x+Scircles[i*stateMachine.zuyuanshu+j].w+2,Scircles[i*stateMachine.zuyuanshu+j].y-450, 0.5, 360);
+					divisionLine.push(line);
+				}
+			}
+		}
+	}
+
+
+	function init(){
+		document.body.appendChild(canvas);
+		canvas.width = canvasWidth;
+		canvas.height = canvasHeight;
+
+		i = setInterval(loop, 1000/30);
+		animationInterval =  setInterval(Animation,10);
+		window.onclick = function(e){
+
+			window.clearInterval(animationInterval);
+			for (var ele of Scircles){
+				console.log("x: "+ele.x+ " "+"r: "+ele.r);
+			}
+
+		}
+		// window.onmouseup = function(e){
+
+		// 	animationInterval =  setInterval(Animation,10);
+
+		// }		
+	}
+
+
+	function Line(xPos, yPos,width, height){
+		this.x = xPos;
+		this.y = yPos;
+		this.w = width;
+		this.h = height;
+		this.render = function(c){
+			c.fillStyle = "#FFFFFF";
+			c.fillRect(this.x, this.y, this.w, this.h);
+		} 
+	}
+
+	function Circle(radius, xPos, yPos=window.innerHeight*0.5){
+	    	this.x = xPos;
+	    	this.y = yPos;
+	    	this.r = radius;
+	    	this.nextX = xPos;
+	    	this.w = 22;
+
+	    	this.font = this.w+"px Georgia";
+	   	 	this.label = ""+radius;
+	    	this.render = function(c){
+	    		if (this.color)
+	    		c.fillStyle = this.color;
+	    		else
+				c.fillStyle ="#DDDDDD";	    
+				c.fillRect(this.x, this.y-100, this.w, -this.r*3);
+				c.font = this.font;
+                c.fillText(this.label,this.x-3,this.y-70);
+	   	 	}
+
+
+
+
+	}
+
+	function loop(){
+		context.clearRect(0,0,canvas.width, canvas.height);
+		draw();
+	}
+
+	function draw(){
+		for (var elem of Scircles){
+			// console.log(elem.r);
+			elem.render(context);
+		}
+		for (var elem of divisionLine){
+			elem.render(context);
+		}
+	}
+
+	</script>
+
+
+</body>
+</html>	

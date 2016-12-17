@@ -1,0 +1,200 @@
+<html>
+<head>
+	<title>randommaze</title>
+	<script type="text/javascript">
+
+		order = new Array();
+		counter = 0;
+		intervalId = null;
+		pause = true;
+
+		window.onload = function  () {
+			document.body.onclick = function() {
+				pause?clearInterval(intervalId) : interval();
+
+				pause = !pause;
+			}
+			init();
+			DFS(51);
+			interval();
+		}
+
+		function interval(){
+			intervalId = setInterval(function(){
+
+				walk(order[counter]);
+			}, 100);
+		
+		}
+
+		function init() {
+			for (var i = 0; i < 1000; i++) {
+				var wall = document.createElement("div");
+				wall.className = "wall";
+				wall.id = i;
+				// wall.innerHTML = i;
+				document.getElementById("maze").appendChild(wall);
+			}
+			document.getElementById("947").className='terminal';
+		}
+
+
+		function walk(id) {
+			document.getElementById(id).className="route2";
+			if (counter >= order.length-1)
+				clearInterval(intervalId);
+			counter++;
+		}
+
+		// function getFourNeighbour(nodeNumber) {
+		// 	fourNeighbour = {
+		// 		left: null,
+		// 		right: null,
+		// 		up: null,
+		// 		down: null
+		// 	}
+		// 	fourNeighbour.left = (nodeNumber-1)%20 == 0? -1: nodeNumber-1;
+		// 	fourNeighbour.up = nodeNumber-20 < 20? -1: nodeNumber-20;
+		// 	fourNeighbour.right = (nodeNumber+2)%20 == 0? -1:
+		// 		nodeNumber+1;
+		// 	fourNeighbour.down = nodeNumber+20 > 379? -1:
+		// 		nodeNumber+20;
+		// 	return fourNeighbour;
+		// }
+
+		function getFourNeighbour(nodeNumber) {
+			fourNeighbour = {}
+			if ((nodeNumber-1)%50 != 0) {
+				fourNeighbour.left = nodeNumber-1;
+			}
+			if (nodeNumber-50 >= 50) {
+				fourNeighbour.up = nodeNumber-50;
+			}
+			if ((nodeNumber+2)%50 != 0) {
+				fourNeighbour.right = nodeNumber+1;
+			}
+			if (nodeNumber+50 <= 949) {
+				fourNeighbour.down = nodeNumber+50;
+			}
+			return fourNeighbour;
+		}
+
+
+		function getAvailableNeighbour(nodeNumber){
+			var neighbour = getFourNeighbour(nodeNumber);
+			var available = new Array();
+			for (var i in neighbour) {
+					var tmp = getFourNeighbour(neighbour[i]);
+					var flag = 0;
+					for (var j in tmp)
+					{
+						if (document.getElementById(tmp[j]).className=='route') {
+							flag++;
+						}
+					}
+					if (flag <= 1 && document.getElementById(neighbour[i]).className!='route') {
+						available.push(neighbour[i]);
+					}
+			}
+			return available;			
+		}
+
+		function isValid(nodeNumber) {
+			var neighbour = getFourNeighbour(nodeNumber);
+			var counter = 0;
+			for (var i in neighbour) {
+				if (document.getElementById(neighbour[i]).className == 'route') {
+					counter++;
+				}
+			}
+			return counter == 1;
+		}
+
+		function DFS(nodeNumber) {
+			order.push(nodeNumber);
+			if (nodeNumber == "947" || document.getElementById(nodeNumber).className == 'route') {
+				return;
+			} else {
+				// console.log(nodeNumber);
+				document.getElementById(nodeNumber).className='route';
+				
+				var available = getAvailableNeighbour(nodeNumber);
+				// console.log(available.length);
+				while (available.length != 0) {
+					var nextStep = Math.floor(Math.random()*available.length);
+					if (getAvailableNeighbour(available[nextStep]).length != 0 && isValid(available[nextStep])) {
+						DFS(available[nextStep]);
+					} 
+					available.splice(nextStep,1);
+				}
+				// console.log(available);
+			}
+		}
+
+
+
+
+
+
+
+
+
+
+
+
+
+	</script>
+	<style type="text/css">
+		#maze {
+			position: absolute;
+			width: 100%;
+			height: 100%;
+			margin: auto;
+
+		}
+
+
+
+		.wall{
+			transition: all 1s;
+			text-align: center;
+			width: 2%;
+			height: 40px;
+/*			border: 1px solid black;*/
+			display: inline-block;
+
+		}
+		.terminal{
+			transition: all 1s;
+			text-align: center;
+			width: 2%;
+			height: 40px;
+/*			border: 1px solid black;*/
+			display: inline-block;
+			background-color: rgba(255,0,0,0.3);	
+		}
+
+		.route{
+			transition: all 1s;
+			text-align: center;
+			width: 2%;
+			height: 40px;
+/*			border: 1px solid black;*/
+			display: inline-block;
+			background-color: rgba(0,0,255,0.2);			
+		}
+		.route2{
+			transition: all 1s;
+			text-align: center;
+			width: 2%;
+			height: 40px;
+/*			border: 1px solid black;*/
+			display: inline-block;
+			background-color: rgba(0,255,0,0.4);			
+		}
+	</style>
+</head>
+<body>
+	<div id = "maze"></div>
+</body>
+</html>

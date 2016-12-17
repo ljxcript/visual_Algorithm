@@ -1,0 +1,257 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+	<title></title>
+	<style type="text/css">
+			body {
+				background-color: black;
+				margin: 0px;
+				overflow: hidden;
+			}
+			h1 {
+				font-size: 80px;
+				color: white;
+				font-family: "Open Sans",Tahoma,Arial;
+			}
+			.title-container{
+				position: absolute;
+				top: 0px;
+				left: 10px;
+			}
+		</style>
+	</head>
+</head>
+<body>
+	<div class="title-container">
+		<h1>Quck Sort Visualization</h1>
+	</div>
+	<script type="text/javascript">
+
+
+	var canvas = document.createElement('canvas');
+	context = canvas.getContext('2d');
+	var canvasWidth = window.innerWidth;
+	var canvasHeight = window.innerHeight;
+    var steps = [];
+
+ 
+	var animationInterval;
+	
+
+	var circles = [];
+	var Scircles = [];
+
+
+
+	for (var i = 0; i < 100; i++){
+
+		var xp = circles.length*20;
+		var circle = new Circle(Number.parseInt(Math.random()*100), xp);
+		var circle2 = new Circle(circle.r, circle.x);
+		circles.push(circle);
+		Scircles.push(circle2);
+	}
+
+
+
+	quickSort(0, circles.length-1, 0);
+
+	function quickSort(low, high, depth){
+	    if (low >= high) return;
+ 	    if (!steps[depth]) 
+	    steps[depth] = [];//  create a level to contain one set of movements under the same depth of recursion
+ 		var first = low, last = high;
+		var keyEle = circles[first].r;
+		var k = new Circle(circles[first].r, circles[first].x);
+		var step = {
+			key: first,
+			move: []
+		};
+		console.log(step.key);
+		while(first < last){
+	        while( circles[last].r >= keyEle && first < last) {
+	  			--last;
+			}
+			// circles[last].x = circles[first].x;	
+    		circles[first] =new Circle(circles[last].r, circles[first].x);
+
+    		var moveInfo = {
+    			index: last,
+    			to: circles[first].x,
+    			toIndex: first
+    		};
+    		step.move.push(moveInfo);
+
+	  		while( circles[first].r <= keyEle && first < last) {
+	          	++first;
+	        }
+
+	  		circles[last] = new Circle(circles[first].r, circles[last].x);
+
+    		var moveInfo2 = {
+    			index: first,
+    			to: circles[last].x,
+    			toIndex: last
+    		};
+    		step.move.push(moveInfo2);
+		}
+
+		//console.log(circles[first].x);
+		step.keyTo = first;
+		step.keyLocation =circles[first].x;
+		circles[first] = new Circle(k.r, circles[first].x);
+
+		// alert(depth);
+		steps[depth].push(step);
+		depth++;
+
+		quickSort(low, first-1,depth);
+		quickSort(first+1, high,depth);
+	}
+
+
+	for (var ele of circles){
+		console.log("x: "+ele.x+ " "+"r: "+ele.r);
+	}
+
+	for (var key in steps){
+		// for (var k in steps[key])
+		//console.log(key+" "+ k + " "+ steps[key][k]);
+	}
+	init();
+
+
+	var stateMachine ={
+		stepC:0,
+		mv:[],
+		trueMv:[],
+		keyNumber:[],
+		accumulator:[]
+	};
+
+	for (var i = 0; i < steps[0].length;i++){
+		stateMachine.mv[i] = steps[0][i].move.length;
+		stateMachine.trueMv[i] = 0;
+		stateMachine.accumulator[i] = 0;
+		stateMachine.keyNumber.push(new Circle(Scircles[steps[0][i].key].r, Scircles[steps[0][i].key].x));
+	}// the initialization of the stateMachin
+
+	function Animation(){
+		var parti = stateMachine.trueMv.length;
+
+		for (var i = 0; i < parti; i++){
+			var mvIndex = stateMachine.trueMv[i];
+			if (mvIndex == 0){
+				Scircles[steps[stateMachine.stepC][i].key].color = "#F23456";
+			}
+
+			if (stateMachine.trueMv[i] == stateMachine.mv[i]){
+				Scircles[steps[stateMachine.stepC][i].keyTo] = new Circle(stateMachine.keyNumber[i].r, steps[stateMachine.stepC][i].keyLocation);
+				stateMachine.accumulator[i] = 1;
+ 				//do nothing......movements in this partition have been done
+			}else {
+				var mvInfo = (steps[stateMachine.stepC][i].move)[mvIndex];
+				if (Scircles[mvInfo.index].x == mvInfo.to){
+					Scircles[mvInfo.toIndex] = new Circle(Scircles[mvInfo.index].r, mvInfo.to);
+					stateMachine.trueMv[i]++;
+				}else {
+					if (Scircles[mvInfo.index].x < mvInfo.to){
+						Scircles[mvInfo.index].x += 20;
+					}else {
+							Scircles[mvInfo.index].x -= 20;						
+					}
+				}
+			}
+		}
+
+
+
+		
+		var flag = true;
+		for (var i = 0; i < stateMachine.mv.length; i++){
+			if (stateMachine.mv[i] != stateMachine.trueMv[i])
+				flag = false;
+			if (stateMachine.accumulator[i] == 0)
+				flag = false;
+		}
+		//if the movements in all the partition have been done, enter the next state.
+
+		if (flag){
+			stateMachine.stepC++;
+			if (!steps[stateMachine.stepC]) {
+				alert(stateMachine.stepC);
+				window.clearInterval(animationInterval);	 
+			}else {			
+				// alert(stateMachine.stepC);
+				stateMachine.mv = [];
+				stateMachine.trueMv = [];
+				stateMachine.keyNumber = [];
+				stateMachine.accumulator = [];
+				// var currentStep = stateMachine.stepC;
+				for (var i = 0; i < steps[stateMachine.stepC].length;i++){
+					stateMachine.mv[i] = steps[stateMachine.stepC][i].move.length;
+					stateMachine.trueMv[i] = 0;
+					stateMachine.accumulator[i] = 0;
+					stateMachine.keyNumber.push(new Circle(Scircles[steps[stateMachine.stepC][i].key].r, Scircles[steps[stateMachine.stepC][i].key].x));			
+				}//need to update the stateMachine with its movement information
+			}
+		}
+		// if (keyMove){
+
+		
+	}
+
+
+
+
+
+	function init(){
+		document.body.appendChild(canvas);
+		canvas.width = canvasWidth;
+		canvas.height = canvasHeight;
+
+		 i = setInterval(loop, 1000/30);
+		animationInterval =  setInterval(Animation,10);
+		// window.onclick = function(e){
+
+		// 	var left = e.clientX;
+		// 	var top = e.clientY;
+		// 	burst(left,top);
+			//console.log(left+"  "+top);
+		// }
+	}
+
+
+
+	function Circle(radius, xPos, yPos=window.innerHeight*0.5){
+	    	this.x = xPos;
+	    	this.y = yPos;
+	    	this.r = radius;
+	    	this.nextX = xPos;
+	    	this.render = function(c){
+	    		if (this.color)
+	    		c.fillStyle = this.color;
+	    		else
+			c.fillStyle ="rgba(18,106,194,1)";	    
+			c.fillRect(this.x, this.y+100, 10, -this.r*4);
+
+	   	 }    
+	}
+
+	function loop(){
+		context.clearRect(0,0,canvas.width, canvas.height);
+		draw();
+	}
+
+	function draw(){
+		for (var elem of Scircles){
+			// console.log(elem.r);
+			elem.render(context);
+		}
+	}
+
+	</script>
+
+
+</body>
+</html>	
