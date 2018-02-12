@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <style>
+      html, body {
+        margin: 0;
+        padding: 0;
+        height: 100%;
+        width: 100%;
+      }
+
+    </style>
+    <meta charset="utf-8">
+    <title></title>
+  </head>
+  <body>
+
+    <canvas id="map"></canvas>
+
+    <script>
+      var htmlFragment = `<div class="style__where-to-buy-content___1gFMq"><header class="style__content-title___1cGvM">Recommend</header><div><div class="style__seller-block___3G5O0"><div class="style__seller-title___3sAfd">DJI Store</div><div class="style__seller-image___1bIEz"><a href="https://store.dji.com"><img src="//static.dbeta.me/stormsend/uploads/758904d0-c846-0135-0b56-22000a969061/StoreEN.png" alt="https://store.dji.com"></a></div></div><div class="style__seller-block___3G5O0"><div class="style__seller-title___3sAfd">Amazon</div><div class="style__seller-image___1bIEz"><a href="http://www.amazon.com"><img src="//static.dbeta.me/stormsend/uploads/855704c0-c846-0135-0b57-22000a969061/amazon.png" alt="http://www.amazon.com"></a></div></div></div></div>`;
+
+      class Node{
+        constructor(parent, tag){
+          this.tag = tag;
+          this.parent = parent || null;
+          this.children = [];
+          this.height = parent ? parent.height + 1 : 0;
+        }
+        append(node) {
+          this.children.push(node);
+        }
+      }
+
+
+      function isTagPair(a, b) {
+        return a.replace(/\//g, '') === b.replace(/\//g, '');
+      }
+      function parsing(s) {
+
+      	const reg = /(<(\w+|!)>)|(<(\w+|!)\/>)|(<\/\w+>)/g;
+      	const tags = s.match(reg);
+      	const stack = [];
+        let root = null;
+        s = s.replace(/\s|\r|\n|/g,'');
+
+      	while(tags.length){
+
+        		let firstOfTag = tags.shift();
+
+        		if (/(<\/\w+>)/.test(firstOfTag)) {
+        			let lastOfStack = stack.pop();
+        			if (!isTagPair(lastOfStack.tag,firstOfTag)) {
+        				throw new Error('document parsing error,'+lastOfStack.tag+' did not match');
+        			}
+              // 这个情况下，对构造的树形不产生任何操作
+        			continue;
+        		}
+
+        		if (/(<(\w+|!)>)/.test(firstOfTag)) {
+              if (!stack.length) {
+                root = new Node(null, firstOfTag);
+                stack.push(root);
+              } else {
+                let node = new Node(stack[stack.length-1], firstOfTag);
+                stack[stack.length-1].append(node);
+                stack.push(node);
+              }
+              //这个情况下，为stack最后一个元素的子节点，如果stack为空，则该节点为根节点
+        			continue;
+        		}
+
+        		if (/(<(\w+|!)\/>)/.test(firstOfTag)) {
+              let node = new Node(stack[stack.length-1], firstOfTag);
+              stack[stack.length-1].append(node);
+              //这个时候同样为stack最后一个元素的子节点
+        			continue;
+        		}
+
+      	}
+      	console.log('parsing finished.....');
+        return root;
+      }
+
+      try{
+
+      	const root = parsing(htmlFragment);
+        window.root = root;
+        console.log(root);
+
+      }catch(e){
+
+      	console.log(e.message)
+
+      }
+
+      // =================
+      function visit(node, buffer) {
+
+
+
+      	while(node.children.length) {
+
+      		visit(node.children.shift());
+      	}
+      	return ;
+      }
+      function dfs(root, buffer) {
+      	let node = root;
+      	visit(node, buffer);
+
+      }
+      // DFS
+      // ==================
+
+
+
+      // ==================
+      while(queue.length){
+      	let first = queue.shift();
+      	console.log(first);
+      	if(first.children.length) {
+      		queue = queue.concat(first.children);
+      	}
+      }
+      // BFS
+      // ==================
+
+
+    </script>
+  </body>
+</html>
