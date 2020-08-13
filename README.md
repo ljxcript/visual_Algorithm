@@ -13,7 +13,7 @@ __[bubble sort](https://ljxcript.github.io/visual_Algorithm/visual_bubbleSort.ht
 
 ![image](https://github.com/ljxcript/visual_Algorithm/blob/master/screenshots/bubble.png)
 
-__[dfs maze_solving](https://ljxcript.github.io/visual_Algorithm/DFS_maze.html.html)__
+__[dfs maze_solving](https://ljxcript.github.io/visual_Algorithm/DFS_maze.html)__
 
 ![image](https://github.com/ljxcript/visual_Algorithm/blob/master/screenshots/DFS.png)
 
